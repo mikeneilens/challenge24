@@ -13,7 +13,7 @@ data class Player(val name: String, val bet: Int, val cards: Cards) {
                                     ::getHigest)
                                 .asSequence()
                                 .mapIndexedNotNull() { index, rule -> rule(tableCards + cards)?.let{ cards -> Hand(cards = cards, handRank = 10 - index)} }
-                                .take(1).toList().first()
+                                .take(1).first()
   }
 
 data class Hand(val cards: Cards, val handRank: Int = 0) {
