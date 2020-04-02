@@ -1,0 +1,26 @@
+/.gradle
+/.idea
+/out
+/build
+*.iml
+*.ipr
+*.iws
+/.kotlintest
+
+!gradle/wrapper/gradle-wrapper.jar
+
+### IntelliJ IDEA ###
+.idea
+*.iws
+*.iml
+*.ipr
+.shelf
+
+build/
+builds/
+nbbuild/
+dist/
+nbdist/
+out/
+
+.DS_Store
