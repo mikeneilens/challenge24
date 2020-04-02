@@ -1,15 +1,19 @@
 typealias Cards = List<String>
 typealias Card = String
+typealias Rule = (Cards) -> Cards?
 
 data class Player(val name: String, val bet: Int, val cards: Cards) {
     fun bestHand(tableCards: Cards): Hand =
-                            listOf( ::getStraight,
+                            listOf<Rule>(
+                                    ::getStraight,
                                     ::getLowStraight,
                                     ::getThree,
                                     ::getTwoPair,
-                                    ::getPair,::getHigest)
-                                .mapIndexedNotNull() { index, f -> f(tableCards + cards)?.let{ Hand(it,10 - index)} }
-                                .first()
+                                    ::getPair,
+                                    ::getHigest)
+                                .asSequence()
+                                .mapIndexedNotNull() { index, rule -> rule(tableCards + cards)?.let{ cards -> Hand(cards = cards, handRank = 10 - index)} }
+                                .take(1).toList().first()
   }
 
 data class Hand(val cards: Cards, val handRank: Int = 0) {
@@ -63,9 +67,9 @@ fun findWinners(players: List<Player>, cardsOnTable: Cards): List<Player> {
     val playersInTheGame = sortedPlayers.filter { it.bet == sortedPlayers.last().bet }
 
     val sortedByHandRank = playersInTheGame.sortedBy { it.bestHand(cardsOnTable).handRank }
-    val playersWithBestRankedCards =  sortedByHandRank.filter { it.bestHand(cardsOnTable).handRank == sortedByHandRank.last().bestHand(cardsOnTable).handRank }
+    val playersWithBestHandRank =  sortedByHandRank.filter { it.bestHand(cardsOnTable).handRank == sortedByHandRank.last().bestHand(cardsOnTable).handRank }
 
-    val sortedByHandValue = playersWithBestRankedCards.sortedBy { it.bestHand(cardsOnTable).value}
+    val sortedByHandValue = playersWithBestHandRank.sortedBy { it.bestHand(cardsOnTable).value}
     return sortedByHandValue.filter { it.bestHand(cardsOnTable).value == sortedByHandValue.last().bestHand(cardsOnTable).value }
 }
 

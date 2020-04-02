@@ -84,7 +84,7 @@ internal class MainKtTest {
     @Test
     fun `should return 1 player that have the highest bet and same hand`() {
         val player1 = Player("Mike", 10, listOf("TC","2D"))
-        val player2 = Player("player3", 12, listOf("TC","2D"))
+        val player2 = Player("player1", 12, listOf("TC","2D"))
         assertEquals(listOf(player2), findWinners(listOf(player1,player2), emptyList()))
     }
 
@@ -97,59 +97,65 @@ internal class MainKtTest {
 
     @Test
     fun `should return 1 player that wins, same bet and winning hand - highest value`() {
-        val player1 = Player("player3", 12, listOf("TC","2D"))
-        val player2 = Player("player4", 12, listOf("JC","2D"))
+        val player1 = Player("player1", 12, listOf("TC","2D"))
+        val player2 = Player("player2", 12, listOf("JC","2D"))
         assertEquals(listOf(player2), findWinners(listOf(player1,player2), emptyList()))
     }
 
 
     @Test
     fun `should return 1 player that wins, same bet and winning hand - highest value plus 5 table cards`() {
-        val player1 = Player("player3", 12, listOf("TC","2D"))
-        val player2 = Player("player4", 12, listOf("JC","2D"))
+        val player1 = Player("player1", 12, listOf("TC","2D"))
+        val player2 = Player("player2", 12, listOf("JC","2D"))
         assertEquals(listOf(player2), findWinners(listOf(player1,player2), listOf("QC","3D","9S","8C","AD")))
     }
 
     @Test
     fun `should return the player with winning hand - pair v no pair`() {
         val player1 = Player("Mike", 12, listOf("TC","2D"))
-        val player2 = Player("player4", 12, listOf("JC","2D"))
+        val player2 = Player("player2", 12, listOf("JC","2D"))
         assertEquals(listOf(player1),findWinners(listOf(player2,player1), listOf("TC","3D","9S","8C","AD")))
     }
     @Test
     fun `should return the player with winning hand - pair v pair`() {
         val player1 = Player("Mike", 12, listOf("JC","2D"))
-        val player2 = Player("player4", 12, listOf("JC","9D"))
+        val player2 = Player("player2", 12, listOf("JC","9D"))
         assertEquals(listOf(player2),findWinners(listOf(player2,player1), listOf("TC","3D","JS","8C","AD")))
     }
     @Test
     fun `should return the player with winning hand - pair v 2 pair`() {
         val player1 = Player("Mike", 12, listOf("JC","2D"))
-        val player2 = Player("player4", 12, listOf("JC","9D"))
+        val player2 = Player("player2", 12, listOf("JC","9D"))
         assertEquals(listOf(player1),findWinners(listOf(player2,player1), listOf("TC","3D","JS","2C","AD")))
     }
     @Test
     fun `should return the player with winning hand - pair v 3 of a kind`() {
         val player1 = Player("Mike", 12, listOf("JC","2D"))
-        val player2 = Player("player4", 12, listOf("JC","JD"))
+        val player2 = Player("player2", 12, listOf("JC","JD"))
         assertEquals(listOf(player2),findWinners(listOf(player2,player1), listOf("TC","3D","JS","2C","AD")))
     }
     @Test
     fun `should return the player with winning hand - 3 of a kind v 3 of a kind`() {
         val player1 = Player("Mike", 12, listOf("JC","JD"))
-        val player2 = Player("player4", 12, listOf("2C","2D"))
+        val player2 = Player("player2", 12, listOf("2C","2D"))
         assertEquals(listOf(player1),findWinners(listOf(player2,player1), listOf("TC","3D","JS","2C","AD")))
     }
     @Test
     fun `should return the player with winning hand - 3 of a kind v straight`() {
         val player1 = Player("Mike", 12, listOf("JC","JD"))
-        val player2 = Player("player4", 12, listOf("2C","4D"))
+        val player2 = Player("player2", 12, listOf("2C","4D"))
         assertEquals(listOf(player2),findWinners(listOf(player2,player1), listOf("TC","3D","JS","5C","6D")))
     }
     @Test
     fun `should return the player with winning hand - low straight v normal straight`() {
         val player1 = Player("Mike", 12, listOf("AC","2C"))
-        val player2 = Player("player4", 12, listOf("2C","3D"))
+        val player2 = Player("player2", 12, listOf("2C","3D"))
         assertEquals(listOf(player2),findWinners(listOf(player2,player1), listOf("TC","4D","JS","5C","6D")))
+    }
+    @Test
+    fun `should return the player with winning hand - straight v straight`() {
+        val player1 = Player("Mike", 12, listOf("7D","3C"))
+        val player2 = Player("player2", 12, listOf("2C","3D"))
+        assertEquals(listOf(player1),findWinners(listOf(player2,player1), listOf("TC","4D","JS","5C","6D")))
     }
 }
