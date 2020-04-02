@@ -1,11 +1,7 @@
 typealias Cards = List<String>
 typealias Card = String
 
-data class Player(
-    val name: String,
-    val bet: Int,
-    val cards: Cards
-) {
+data class Player(val name: String, val bet: Int, val cards: Cards) {
     fun bestHand(tableCards: Cards): Hand =
                             listOf( ::getStraight,
                                     ::getLowStraight,
