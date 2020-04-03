@@ -83,10 +83,10 @@ fun getStraightFlush(cards: Cards): Cards? = getStraight(cards.withSameSuit())
 fun Cards.getMatches(qty:Int, matcher:(Card, Card)->Boolean = { card1, card2 -> card1.rank() == card2.rank()}, sortBy:(Card)->Int = { card -> card.rank()}):Cards? {
     val matches = sortedBy (sortBy).reversed()
         .map { listOf(it) }
-        .reduce{duplicates, card ->
+        .reduce{cardSequence, card ->
             when {
-                duplicates.size == qty -> duplicates
-                matcher(duplicates.last() , card[0]) -> duplicates + card
+                cardSequence.size == qty -> cardSequence
+                matcher(cardSequence.last() , card[0]) -> cardSequence + card
                 else -> card
             }
         }
