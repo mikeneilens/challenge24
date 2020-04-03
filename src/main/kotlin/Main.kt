@@ -17,7 +17,7 @@ data class Player(val name: String, val bet: Int, val cards: Cards) {
     fun bestHand(tableCards: Cards): Hand =
                             listOf<Rule>(
                                     ::getStraightFlush,
-                                    ::getAceLowStraightFlush,
+                                    ::getLowStraightFlush,
                                     ::getFour,
                                     ::getFullHouse,
                                     ::getFlush,
@@ -27,9 +27,8 @@ data class Player(val name: String, val bet: Int, val cards: Cards) {
                                     ::getTwoPair,
                                     ::getPair,
                                     ::getHighest)
-                                .asSequence()
                                 .mapIndexedNotNull { index, rule -> rule(tableCards + cards)?.let{ cards -> Hand(cards = cards, handRank = 11 - index)} }
-                                .take(1).first()
+                                .first()
   }
 
 data class Hand(val cards: Cards, val handRank: Int = 0) {
@@ -40,15 +39,15 @@ fun getHighest(cards:Cards):Cards = cards.sortedBy { it.rank() }.reversed().take
 
 fun getPair(cards: Cards): Cards? {
     val pair =  cards.getMatches(2) ?: return null
-    val remainingCards = cards.filter {it != pair[0] && it != pair[1] }.sortedBy { it.rank() }.reversed().take(3)
-    return pair + remainingCards
+    val remainingCards = cards - pair
+    return pair + remainingCards.sortedBy { it.rank() }.reversed().take(3)
 }
 
 fun getTwoPair(cards:Cards):Cards? {
-    val firstPair = getPair(cards) ?: return null
-    val remainingCards = cards.filter {it != firstPair[0] && it != firstPair[1] }
+    val firstPair = getPair(cards)?.take(2) ?: return null
+    val remainingCards =  cards - firstPair
     val secondPair = getPair(remainingCards) ?: return null
-    return firstPair.take(2) + secondPair.take(3)
+    return firstPair + secondPair.take(3)
 }
 
 fun getThree(cards: Cards): Cards? = cards.getMatches(3)
@@ -60,28 +59,26 @@ fun getLowStraight(cards: Cards): Cards? = cards.removeDuplicates().getMatches(5
     matcher = {card1,card2 -> card1.aceLowRank() == card2.aceLowRank() + 1},
     sortBy = {card -> card.aceLowRank()})
 
-fun getFlush(cards:Cards): Cards? = listOf('H','C','D',"S")
-      .map{suit -> cards.filter { card -> card.suit() == suit }}
-      .filter{it.size >= 5}
-      .firstOrNull()?.sortedBy { it.rank() }
-      ?.reversed()
-      ?.take(5)
+fun getFlush(cards:Cards): Cards? =
+        if (cards.withSameSuit().size >= 5)
+            cards.withSameSuit()
+            .sortedBy { it.rank() }
+            .reversed()
+            .take(5)
+        else null
 
 fun getFullHouse(cards:Cards):Cards? {
     val three = getThree(cards) ?: return null
-    val remainingCards = cards.filter {it != three[0] && it != three[1] && it != three[2] }
+    val remainingCards =  cards - three
     val pair = getPair(remainingCards) ?: return null
     return three.take(3) + pair.take(2)
 }
 
 fun getFour(cards: Cards): Cards? = cards.getMatches(4)
 
-fun getAceLowStraightFlush(cards: Cards): Cards? = cards.removeDuplicates().getMatches(5,
-    matcher =  {card1,card2 -> (card1.aceLowRank() == card2.aceLowRank() + 1) && (card1.suit() == card2.suit()) } ,
-    sortBy =  {card -> card.aceLowRank()})
+fun getLowStraightFlush(cards: Cards): Cards? = getLowStraight(cards.withSameSuit())
 
-fun getStraightFlush(cards: Cards): Cards? = cards.removeDuplicates(). getMatches(5,
-    matcher = {card1,card2 -> (card1.rank() == card2.rank() + 1) && (card1.suit() == card2.suit()) })
+fun getStraightFlush(cards: Cards): Cards? = getStraight(cards.withSameSuit())
 
 fun Cards.getMatches(qty:Int, matcher:(Card, Card)->Boolean = { card1, card2 -> card1.rank() == card2.rank()}, sortBy:(Card)->Int = { card -> card.rank()}):Cards? {
     val matches = sortedBy (sortBy).reversed()
@@ -99,6 +96,14 @@ fun Cards.getMatches(qty:Int, matcher:(Card, Card)->Boolean = { card1, card2 -> 
 fun Cards.removeDuplicates():Cards {
     return distinctBy { card -> card.rank() }
 }
+
+fun Cards.withSameSuit():Cards =
+    listOf('H', 'C', 'D', "S")
+        .map { suit -> filter { card -> card.suit() == suit } }
+        .maxBy { it.size }!!
+
+//warning this will remove more than you may expect if you have duplicate card names!
+operator fun Cards.minus(other:Cards):Cards = (this.toSet() - other.toSet()).toList()
 
 fun Card.rank()=  when (this.first()) {
         'A' -> 14

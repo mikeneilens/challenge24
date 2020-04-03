@@ -87,7 +87,7 @@ internal class MainKtTest {
 
     @Test
     fun `getFullHouse() should return the best full house when passed a list of cards with more than one full house`() {
-        assertEquals(listOf("QC","QC","QC","9S","9S"),getFullHouse(listOf("QC","9S","9S","QC","9S","QC","2C")))
+        assertEquals(listOf("QH","QD","QC","9D","9S"),getFullHouse(listOf("QC","9S","9D","QD","9S","QH","2C")))
     }
 
     @Test
@@ -132,7 +132,7 @@ internal class MainKtTest {
     @Test
     fun `getAceLowStraightFlush() should return straightFlush when passed a list of cards which is an ace low straight flush`() {
         val cards = listOf("2D","AD","3D","4D","5D","TD","JD")
-        assertEquals(listOf("5D","4D","3D","2D","AD"), getAceLowStraightFlush(cards) )
+        assertEquals(listOf("5D","4D","3D","2D","AD"), getLowStraightFlush(cards) )
     }
 
     @Test
