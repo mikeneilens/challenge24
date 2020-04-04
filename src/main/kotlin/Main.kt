@@ -27,11 +27,12 @@ data class Player(val name: String, val bet: Int, val cards: Cards) {
                                     ::getTwoPair,
                                     ::getPair,
                                     ::getHighest)
+                                .asSequence()
                                 .mapIndexedNotNull { index, rule -> rule(tableCards + cards)?.let{ cards -> Hand(cards = cards, handRank = 11 - index)} }
-                                .first()
+                                .take(1).first()
   }
 
-data class Hand(val cards: Cards, val handRank: Int = 0) {
+data class Hand(val cards: Cards, val handRank:Int) {
     val value = cards.joinToString("") { it.rank().toString().padStart(2, '0') }
 }
 
@@ -45,18 +46,17 @@ fun getPair(cards: Cards): Cards? {
 
 fun getTwoPair(cards:Cards):Cards? {
     val firstPair = getPair(cards)?.take(2) ?: return null
-    val remainingCards =  cards - firstPair
-    val secondPair = getPair(remainingCards) ?: return null
+    val secondPair = getPair(cards - firstPair) ?: return null
     return firstPair + secondPair.take(3)
 }
 
 fun getThree(cards: Cards): Cards? = cards.getMatches(3)
 
-fun getStraight(cards: Cards): Cards? = cards.removeDuplicates().getMatches(5,
-    matcher = {card1,card2 -> card1.rank() == card2.rank() + 1})
+fun getStraight(cards: Cards): Cards? = cards.removeDuplicateRank().getMatches(5,
+    matcher = {card,nextCard -> card.rank() == nextCard.rank() + 1})
 
-fun getLowStraight(cards: Cards): Cards? = cards.removeDuplicates().getMatches(5,
-    matcher = {card1,card2 -> card1.aceLowRank() == card2.aceLowRank() + 1},
+fun getLowStraight(cards: Cards): Cards? = cards.removeDuplicateRank().getMatches(5,
+    matcher = {card,cardNextCard -> card.aceLowRank() == cardNextCard.aceLowRank() + 1},
     sortBy = {card -> card.aceLowRank()})
 
 fun getFlush(cards:Cards): Cards? =
@@ -68,10 +68,9 @@ fun getFlush(cards:Cards): Cards? =
         else null
 
 fun getFullHouse(cards:Cards):Cards? {
-    val three = getThree(cards) ?: return null
-    val remainingCards =  cards - three
-    val pair = getPair(remainingCards) ?: return null
-    return three.take(3) + pair.take(2)
+    val threeOfAKind = getThree(cards) ?: return null
+    val pair = getPair(cards - threeOfAKind) ?: return null
+    return threeOfAKind + pair.take(2)
 }
 
 fun getFour(cards: Cards): Cards? = cards.getMatches(4)
@@ -80,7 +79,7 @@ fun getLowStraightFlush(cards: Cards): Cards? = getLowStraight(cards.withSameSui
 
 fun getStraightFlush(cards: Cards): Cards? = getStraight(cards.withSameSuit())
 
-fun Cards.getMatches(qty:Int, matcher:(Card, Card)->Boolean = { card1, card2 -> card1.rank() == card2.rank()}, sortBy:(Card)->Int = { card -> card.rank()}):Cards? {
+fun Cards.getMatches(qty:Int, matcher:(Card, Card)->Boolean = { card, nextCard -> card.rank() == nextCard.rank()}, sortBy:(Card)->Int = { card -> card.rank()}):Cards? {
     val matches = sortedBy (sortBy).reversed()
         .map { listOf(it) }
         .reduce{cardSequence, card ->
@@ -93,7 +92,7 @@ fun Cards.getMatches(qty:Int, matcher:(Card, Card)->Boolean = { card1, card2 -> 
     return if (matches.size == qty ) matches else  null
 }
 
-fun Cards.removeDuplicates():Cards {
+fun Cards.removeDuplicateRank():Cards {
     return distinctBy { card -> card.rank() }
 }
 
